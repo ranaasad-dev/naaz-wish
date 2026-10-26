@@ -1,0 +1,8 @@
+1. Extract this ZIP.
+2. Open your existing GitHub repository -> Add file -> Upload files.
+3. Drag ALL files and the assets folder from INSIDE Farah-Naaz-Birthday-Website into GitHub.
+4. Commit changes. Existing files will update; keep the assets folder path intact.
+5. Wait for Actions deployment to complete. Refresh your live site with Ctrl+F5.
+
+Farah Naaz's PHOTO and your AUDIO are already included.
+Do not upload the ZIP itself or the outer Farah-Naaz-Birthday-Website folder.
