@@ -3,6 +3,6 @@
 // Urdu/Arabic digits (۲۰۲۶ / ٢٠٢٦) and English digits (2026) are equivalent.
 // This is a front-end surprise lock; it does not protect files from source inspection.
 window.BIRTHDAY_PASSWORDS = {
-  en: 'Farah@2006',
-  ur: 'Farah@2006'
+  en: 'بیویوں',
+  ur: 'بیویوں'
 };
