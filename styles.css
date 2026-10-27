@@ -30,3 +30,28 @@ html[lang] .alisha-section{font:15px/1.8 'DM Sans',Arial,sans-serif;text-align:s
 .portrait-frame img{width:100%;height:auto;aspect-ratio:auto;object-fit:contain;object-position:center;border-radius:17px;display:block}
 .portrait-decoration{inset-inline-end:-14px;top:-15px;font-size:40px}
 @media(max-width:800px){.portrait-frame{width:min(100%,280px);max-width:280px}}
+
+
+/* Pehla header: hamesha top par */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+}
+
+/* Doosra menu: header ke neeche rukega */
+.section-nav {
+  position: sticky;
+  top: var(--header-height, 94px);
+  z-index: 90;
+}
+
+/* Menu link click par heading bars ke peeche na chhupe */
+html {
+  scroll-padding-top: calc(
+    var(--header-height, 94px) +
+    var(--section-nav-height, 60px) +
+    16px
+  );
+}
