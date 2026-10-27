@@ -31,27 +31,18 @@ html[lang] .alisha-section{font:15px/1.8 'DM Sans',Arial,sans-serif;text-align:s
 .portrait-decoration{inset-inline-end:-14px;top:-15px;font-size:40px}
 @media(max-width:800px){.portrait-frame{width:min(100%,280px);max-width:280px}}
 
-
-/* Pehla header: hamesha top par */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: var(--bg);
-}
-
-/* Doosra menu: header ke neeche rukega */
-.section-nav {
-  position: sticky;
-  top: var(--header-height, 94px);
-  z-index: 90;
-}
-
-/* Menu link click par heading bars ke peeche na chhupe */
-html {
-  scroll-padding-top: calc(
-    var(--header-height, 94px) +
-    var(--section-nav-height, 60px) +
-    16px
-  );
-}
+/* Password step between the countdown and the celebration. */
+.password-screen{display:grid;place-items:center;padding:55px 24px 65px}
+.password-card{width:min(100%,560px);padding:36px 40px}
+.password-card h1{font-size:clamp(34px,4vw,48px);line-height:1.2;letter-spacing:-1px;margin:14px 0 18px}
+.password-card>.intro{font-size:14px;max-width:390px;margin:0 auto 22px;line-height:1.8}
+.password-seal{display:grid;place-items:center;width:65px;height:65px;border:1px solid var(--line);border-radius:50%;margin:0 auto 20px;background:#d9a1ac14;color:var(--pink);font:38px/1 Georgia,serif}
+.password-input-row{display:flex;align-items:stretch;gap:8px}
+.password-input-row input{min-width:0;flex:1;font-family:'DM Sans','Noto Naskh Arabic',Arial,sans-serif;font-size:16px;text-align:start}
+.password-input-row .secondary{flex:none;min-width:70px;padding:10px 13px;gap:0}
+.password-card .hint{font-size:12px;line-height:1.8}
+.password-card .error{margin:10px 0;min-height:24px}
+html[lang="ur"] .password-card h1{font-size:clamp(30px,4vw,43px);line-height:1.65;letter-spacing:0}
+html[lang="ur"] .password-card>.intro{font-size:17px}
+html[lang="ur"] .password-card .hint,html[lang="ur"] .password-card label,html[lang="ur"] .password-card .error{font-size:15px}
+@media(max-width:600px){.password-screen{padding:32px 18px 45px}.password-card{padding:28px 22px}.password-card h1{font-size:35px}.password-card .eyebrow{letter-spacing:1.7px}.password-input-row .secondary{min-width:64px;padding-inline:10px}html[lang="ur"] .password-card .eyebrow{letter-spacing:0}}

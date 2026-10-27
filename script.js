@@ -734,10 +734,28 @@ Object.assign(translations, {
   }
 });
 Object.assign(translations, {"nickname": {"en": "My dear sister Farah Naaz. One name, so much love.", "ur": "میری پیاری بہن فرح ناز۔ ایک نام، ڈھیروں محبت۔"}, "footerSign": {"en": "Especially for my dear sister Farah Naaz ♡", "ur": "خاص میری پیاری بہن فرح ناز کے لیے ♡"}, "letterExtra7": {"en": "Happy Birthday, my dear sister Farah Naaz! ♡🎂", "ur": "سالگرہ مبارک، میری پیاری بہن فرح ناز! ♡🎂"}, "shareText": {"en": "Happy Birthday to my dear sister Farah Naaz! ♡ A birthday surprise made with love by Asad, with a special gift from Alisha.", "ur": "میری پیاری بہن فرح ناز کو سالگرہ مبارک! ♡ اسد کی طرف سے محبت بھرا سرپرائز، علیشا کے خاص تحفے کے ساتھ۔"}, "navPhoto": {"en": "Farah Naaz’s portrait ♡", "ur": "فرح ناز کی تصویر ♡"}});
+Object.assign(translations, {
+  passwordEyebrow: {en:'ONE LAST LITTLE SECRET',ur:'بس ایک چھوٹا سا راز اور'},
+  passwordTitle: {en:'Your surprise is<br><em>one password away.</em>',ur:'تمہارے سرپرائز کی<br><em>چابی ایک پاس ورڈ ہے۔</em>'},
+  passwordIntro: {en:'Enter the special password in English or Urdu to open your birthday surprise.',ur:'اپنا سالگرہ کا سرپرائز کھولنے کے لیے خاص پاس ورڈ انگریزی یا اردو میں درج کرو۔'},
+  passwordLabel: {en:'Your secret password',ur:'تمہارا خاص پاس ورڈ'},
+  passwordPlaceholder: {en:'Enter your password',ur:'اپنا پاس ورڈ لکھو'},
+  passwordHint: {en:'Either the English or the Urdu password works. You only need to enter one. ♡',ur:'انگریزی یا اردو، دونوں میں سے کوئی ایک درست پاس ورڈ لکھو۔ ♡'},
+  passwordUnlock: {en:'Unlock My Surprise <span>♡</span>',ur:'میرا سرپرائز کھولو <span>♡</span>'},
+  passwordShow: {en:'Show',ur:'دکھاؤ'},
+  passwordHide: {en:'Hide',ur:'چھپاؤ'},
+  passwordShowAria: {en:'Show password',ur:'پاس ورڈ دکھاؤ'},
+  passwordHideAria: {en:'Hide password',ur:'پاس ورڈ چھپاؤ'},
+  passwordEmpty: {en:'Enter your password first, dear sister. ♡',ur:'پیاری بہن، پہلے اپنا پاس ورڈ لکھو۔ ♡'},
+  passwordWrong: {en:'That password is not quite right. Try again, dear sister. ♡',ur:'یہ پاس ورڈ درست نہیں ہے۔ پیاری بہن، دوبارہ کوشش کرو۔ ♡'},
+  passwordUnavailable: {en:'The password is not ready yet. Please ask Asad to set it.',ur:'پاس ورڈ ابھی تیار نہیں ہے۔ اسد سے اسے مقرر کرنے کا کہو۔'},
+  passwordFoot: {en:'A little secret, then a whole lot of love.',ur:'ایک چھوٹا سا راز، پھر ڈھیروں محبت۔'}
+});
 let currentLanguage = 'en';
 let currentTheme = 'light';
 let audioUnavailable = false;
 let birthdayVerified = false;
+let passwordVerified = false, passwordErrorKey = '';
 let musicMuted = false, musicVolume = .6, masterGain = null, musicGeneration = 0;
 let shareNeedsDeployment = false;
 function t(key) { return translations[key][currentLanguage]; }
@@ -775,7 +793,7 @@ function applyLanguage(language) {
   if ($('birthday').getAttribute('aria-invalid') === 'true') {
     $('error').textContent = t($('birthday').value ? 'errorWrong' : 'errorEmpty');
   }
-  updateCountdown(); renderCake(); renderLetterButton(); renderWish(); musicLabel(); renderFunny(); renderVerification(); renderMusicSource();
+  updateCountdown(); renderCake(); renderLetterButton(); renderWish(); musicLabel(); renderFunny(); renderVerification(); renderPassword(); renderMusicSource();
   $('share-note').textContent = t(shareNeedsDeployment ? 'shareLocal' : 'shareDefault');
   applyTheme(currentTheme);
   savePreference('farah-naaz-language', currentLanguage);
@@ -809,7 +827,10 @@ if (customMusicURL) musicPlayer.src = customMusicURL;
 const activeNotes = new Set();
 let confettiTimer;
 function showScreen(name) {
-  ['intro', 'welcome', 'countdown', 'celebration'].forEach(id => { $(id).hidden = id !== name; });
+  // Every normal route into the surprise must pass both checks.
+  if (['countdown', 'password-gate', 'celebration'].includes(name) && !birthdayVerified) name = 'welcome';
+  if (name === 'celebration' && !passwordVerified) name = 'password-gate';
+  ['intro', 'welcome', 'countdown', 'password-gate', 'celebration'].forEach(id => { $(id).hidden = id !== name; });
   $('return-main').hidden = name !== 'celebration';
   window.scrollTo({ top: 0, behavior: 'instant' });
   const heading = $(name).querySelector('h1');
@@ -838,12 +859,56 @@ function renderVerification() {
   $('verified-message').textContent = birthdayVerified ? t('verifySuccess') : '';
 }
 $('birthday').addEventListener('input', () => {
+  resetPassword();
   birthdayVerified = false; renderVerification(); $('error').textContent = ''; $('birthday').removeAttribute('aria-invalid');
 });
 $('gate-continue').addEventListener('click', () => {
   if (!birthdayVerified || $('birthday').value !== BIRTH_DATE) return;
-  if (countdownParts().finished) { showScreen('celebration'); celebrate(); }
+  if (countdownParts().finished) showScreen('password-gate');
   else { updateCountdown(); showScreen('countdown'); }
+});
+function normalizePassword(value) {
+  return value.normalize('NFC').replace(/[\u200e\u200f\u061c]/g, '')
+    .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x06f0))
+    .replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x0660));
+}
+function renderPassword() {
+  const visible = $('surprise-password').type === 'text';
+  $('surprise-password').placeholder = t('passwordPlaceholder');
+  $('password-visibility').textContent = t(visible ? 'passwordHide' : 'passwordShow');
+  $('password-visibility').setAttribute('aria-label', t(visible ? 'passwordHideAria' : 'passwordShowAria'));
+  $('password-visibility').setAttribute('aria-pressed', String(visible));
+  $('password-error').textContent = passwordErrorKey ? t(passwordErrorKey) : '';
+}
+function resetPassword() {
+  passwordVerified = false; passwordErrorKey = '';
+  $('surprise-password').value = ''; $('surprise-password').type = 'password';
+  $('surprise-password').removeAttribute('aria-invalid');
+  renderPassword();
+}
+$('password-visibility').addEventListener('click', () => {
+  $('surprise-password').type = $('surprise-password').type === 'password' ? 'text' : 'password';
+  renderPassword();
+});
+$('surprise-password').addEventListener('input', () => {
+  passwordErrorKey = ''; $('surprise-password').removeAttribute('aria-invalid'); renderPassword();
+});
+$('password-form').addEventListener('submit', event => {
+  event.preventDefault();
+  if (!birthdayVerified) { resetPassword(); showScreen('welcome'); return; }
+  const settings = window.BIRTHDAY_PASSWORDS || {};
+  const accepted = [settings.en, settings.ur].filter(value => typeof value === 'string' && value.trim());
+  const entered = normalizePassword($('surprise-password').value);
+  passwordErrorKey = !accepted.length ? 'passwordUnavailable' : !entered.trim() ? 'passwordEmpty' :
+    accepted.some(value => normalizePassword(value) === entered) ? '' : 'passwordWrong';
+  if (passwordErrorKey) {
+    passwordVerified = false; $('surprise-password').setAttribute('aria-invalid', 'true');
+    renderPassword(); $('surprise-password').focus(); return;
+  }
+  passwordVerified = true;
+  $('surprise-password').value = ''; $('surprise-password').type = 'password';
+  $('surprise-password').removeAttribute('aria-invalid'); renderPassword();
+  showScreen('celebration'); celebrate();
 });
 function countdownParts(now = Date.now()) {
   const remaining = Math.max(0, CELEBRATION_DATE.getTime() - now);
@@ -854,7 +919,7 @@ function updateCountdown() {
   const parts = countdownParts();
   ['days', 'hours', 'minutes', 'seconds'].forEach(key => { $(key).textContent = String(parts[key]).padStart(2, '0'); });
   $('count-message').textContent = t(parts.finished ? 'countFinished' : 'countWaiting');
-  if (parts.finished && !$('countdown').hidden && birthdayVerified) { showScreen('celebration'); celebrate(); }
+  if (parts.finished && !$('countdown').hidden && birthdayVerified) showScreen('password-gate');
 }
 updateCountdown();
 setInterval(updateCountdown, 1000);
@@ -876,7 +941,7 @@ function celebrate() {
   $('confetti').append(fragment);
   confettiTimer = setTimeout(() => $('confetti').replaceChildren(), 6000);
 }
-$('open-surprise').addEventListener('click', () => { showScreen('celebration'); celebrate(); });
+$('open-surprise').addEventListener('click', () => showScreen('password-gate'));
 $('blow').addEventListener('click', () => {
   candlesLit = !candlesLit;
   $('cake-art').classList.toggle('unlit', !candlesLit);
@@ -994,7 +1059,7 @@ musicPlayer.addEventListener('error', () => {
 function replay() {
   stopMusic(); noteIndex = 0; musicMuted = false; musicVolume = .6; $('volume').value = '60'; musicLabel();
   if (customMusicURL) musicPlayer.currentTime = 0;
-  birthdayVerified = false; renderVerification(); resetFunny();
+  birthdayVerified = false; renderVerification(); resetPassword(); resetFunny();
   if (!candlesLit) $('blow').click();
   if (!$('letter').hidden) $('letter-toggle').click();
   wishIndex = 0; renderWish();
@@ -1067,7 +1132,7 @@ $('mute').addEventListener('click', () => { musicMuted = !musicMuted; musicLabel
 $('volume').addEventListener('input', () => { musicVolume = Number($('volume').value) / 100; musicLabel(); });
 function scrollToTop() {
   window.scrollTo({top:0,behavior:reducedMotion.matches ? 'instant' : 'smooth'});
-  const heading = document.querySelector('#intro:not([hidden]) h1, #welcome:not([hidden]) h1, #countdown:not([hidden]) h1, #celebration:not([hidden]) h1');
+  const heading = document.querySelector('#intro:not([hidden]) h1, #welcome:not([hidden]) h1, #countdown:not([hidden]) h1, #password-gate:not([hidden]) h1, #celebration:not([hidden]) h1');
   if (heading) { heading.setAttribute('tabindex','-1'); heading.focus({preventScroll:true}); }
 }
 $('back-top').addEventListener('click', scrollToTop);
@@ -1081,32 +1146,3 @@ $('theme-toggle').addEventListener('click', () => applyTheme(currentTheme === 'd
 $('language-toggle').addEventListener('click', () => applyLanguage(currentLanguage === 'en' ? 'ur' : 'en'));
 currentTheme = readPreference('farah-naaz-rose-theme') === 'dark' ? 'dark' : 'light';
 applyLanguage(readPreference('farah-naaz-language') === 'ur' ? 'ur' : 'en');
-
-
-const stickyHeader = document.querySelector('header');
-const stickyMenu = document.querySelector('.section-nav');
-
-function updateStickyHeights() {
-  const headerHeight = stickyHeader.getBoundingClientRect().height;
-  const menuHeight = stickyMenu.getBoundingClientRect().height;
-
-  document.documentElement.style.setProperty(
-    '--header-height',
-    `${headerHeight}px`
-  );
-
-  document.documentElement.style.setProperty(
-    '--section-nav-height',
-    `${menuHeight}px`
-  );
-}
-
-if ('ResizeObserver' in window) {
-  const stickyObserver = new ResizeObserver(updateStickyHeights);
-
-  stickyObserver.observe(stickyHeader);
-  stickyObserver.observe(stickyMenu);
-}
-
-window.addEventListener('resize', updateStickyHeights);
-updateStickyHeights();
