@@ -868,7 +868,8 @@ $('gate-continue').addEventListener('click', () => {
   else { updateCountdown(); showScreen('countdown'); }
 });
 function normalizePassword(value) {
-  return value.normalize('NFC').replace(/[\u200e\u200f\u061c]/g, '')
+  // Ignore English letter case; keep Urdu text and normalize digit styles.
+  return value.normalize('NFC').toLowerCase().replace(/[\u200e\u200f\u061c]/g, '')
     .replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 0x06f0))
     .replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x0660));
 }
