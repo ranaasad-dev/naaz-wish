@@ -1081,3 +1081,32 @@ $('theme-toggle').addEventListener('click', () => applyTheme(currentTheme === 'd
 $('language-toggle').addEventListener('click', () => applyLanguage(currentLanguage === 'en' ? 'ur' : 'en'));
 currentTheme = readPreference('farah-naaz-rose-theme') === 'dark' ? 'dark' : 'light';
 applyLanguage(readPreference('farah-naaz-language') === 'ur' ? 'ur' : 'en');
+
+
+const stickyHeader = document.querySelector('header');
+const stickyMenu = document.querySelector('.section-nav');
+
+function updateStickyHeights() {
+  const headerHeight = stickyHeader.getBoundingClientRect().height;
+  const menuHeight = stickyMenu.getBoundingClientRect().height;
+
+  document.documentElement.style.setProperty(
+    '--header-height',
+    `${headerHeight}px`
+  );
+
+  document.documentElement.style.setProperty(
+    '--section-nav-height',
+    `${menuHeight}px`
+  );
+}
+
+if ('ResizeObserver' in window) {
+  const stickyObserver = new ResizeObserver(updateStickyHeights);
+
+  stickyObserver.observe(stickyHeader);
+  stickyObserver.observe(stickyMenu);
+}
+
+window.addEventListener('resize', updateStickyHeights);
+updateStickyHeights();
